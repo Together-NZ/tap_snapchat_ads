@@ -26,7 +26,7 @@ from urllib.parse import urlencode
 import singer
 from singer import Transformer, metadata, metrics, utils
 from singer.utils import strptime_to_utc, strftime
-
+import json
 ALL_STATS_FIELDS = 'android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_sign_ups,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,attachment_frequency,attachment_uniques,frequency,uniques'
 
 LOGGER = singer.get_logger()
@@ -239,16 +239,23 @@ class SnapchatAds:
         Extracts data for selected profiles(organizations and ad_accounts)
         reads respective IDs from config json and iterates over each id and extracts data
         """
-        selected_profiles = config.get('org_account_ids', [])
-
-        ids = []
         url = BASE_URL + '/{stream_name}/{id}'
+        # Parse selected_profiles as JSON
+        # Load `selected_profiles` from config as JSON if needed
+        selected_profiles = json.loads(config.get('org_account_ids', '[]'))
+
+        # Check if `selected_profiles` is a list of dictionaries
+        if not isinstance(selected_profiles, list) or not all(isinstance(profile, dict) for profile in selected_profiles):
+            raise TypeError("Expected `selected_profiles` to be a list of dictionaries")
+
+        # Proceed with existing logic
+        ids = []
         for profile in selected_profiles:
             if stream_name == 'organizations':
                 ids.append(profile.get('organisation_id'))
             else:
                 if parent_id == profile.get('organisation_id'):
-                    ids = profile.get('ad_accounts')
+                    ids.extend(profile.get('ad_accounts', []))
                     break
         # WARN Logger to confirm if User has selected Ad accounts or if Ad accounts doesn't exist for org_id
         if not ids and stream_name == 'adaccounts':

@@ -157,11 +157,15 @@ class SnapchatClient: # pylint: disable=too-many-instance-attributes
                  client_secret,
                  refresh_token,
                  request_timeout,
-                 user_agent=None):
+                 user_agent='Melatano',
+                 org_account_ids=None,
+                 ad_account_ids=None):
         self.__client_id = client_id
         self.__client_secret = client_secret
         self.__refresh_token = refresh_token
         self.__user_agent = user_agent
+        self.__org_account_ids = org_account_ids
+        self.__ad_account_ids = ad_account_ids
         self.__access_token = None
         self.__expires = None
         self.__session = requests.Session()
@@ -204,6 +208,8 @@ class SnapchatClient: # pylint: disable=too-many-instance-attributes
                 'client_id': self.__client_id,
                 'client_secret': self.__client_secret,
                 'refresh_token': self.__refresh_token,
+                'org_account_ids': self.__org_account_ids,
+                'ad_account_ids': self.__ad_account_ids
             })
 
         if response.status_code != 200:

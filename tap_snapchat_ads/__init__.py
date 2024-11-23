@@ -17,7 +17,8 @@ REQUIRED_CONFIG_KEYS = [
     'refresh_token',
     'start_date',
     'user_agent',
-    'org_account_ids'
+    'org_account_ids',
+    'ad_account_ids'
 ]
 
 def do_discover():
@@ -37,7 +38,9 @@ def main():
                         parsed_args.config['client_secret'],
                         parsed_args.config['refresh_token'],
                         parsed_args.config.get('request_timeout'),
-                        parsed_args.config['user_agent']) as client:
+                        parsed_args.config['user_agent'],
+                        parsed_args.config['org_account_ids'],
+                        parsed_args.config['ad_account_ids']) as client:
 
         state = {}
         if parsed_args.state:

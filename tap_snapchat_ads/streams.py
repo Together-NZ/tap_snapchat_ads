@@ -242,21 +242,26 @@ class SnapchatAds:
         url = BASE_URL + '/{stream_name}/{id}'
         # Parse selected_profiles as JSON
         # Load `selected_profiles` from config as JSON if needed
-        selected_profiles = json.loads(config.get('org_account_ids', '[]'))
+        # Extract org_account_id and ad_account_ids directly from the config
+        # Extract org_account_id and ad_account_ids directly from the config
+        org_account_id = config.get('org_account_ids', '')  # Single string like "234234r3"
+        ad_account_ids = config.get('ad_account_ids', '')   # Single string like "345346346346"
 
-        # Check if `selected_profiles` is a list of dictionaries
-        if not isinstance(selected_profiles, list) or not all(isinstance(profile, dict) for profile in selected_profiles):
-            raise TypeError("Expected `selected_profiles` to be a list of dictionaries")
+        # Validate that both are non-empty strings
+        if not isinstance(org_account_id, str) or not org_account_id:
+            raise TypeError("Expected `org_account_ids` to be a non-empty string")
 
-        # Proceed with existing logic
+        if not isinstance(ad_account_ids, str) or not ad_account_ids:
+            raise TypeError("Expected `ad_account_ids` to be a non-empty string")
+
+        # Proceed with the logic
         ids = []
-        for profile in selected_profiles:
-            if stream_name == 'organizations':
-                ids.append(profile.get('organisation_id'))
-            else:
-                if parent_id == profile.get('organisation_id'):
-                    ids.extend(profile.get('ad_accounts', []))
-                    break
+        if stream_name == 'organizations':
+            ids.append(org_account_id)  # Append org_account_id as a single string
+        else:
+            if parent_id == org_account_id:
+                ids.append(ad_account_ids)
+
         # WARN Logger to confirm if User has selected Ad accounts or if Ad accounts doesn't exist for org_id
         if not ids and stream_name == 'adaccounts':
             LOGGER.warn("No AD Accounts selected or exist for organisation id {}".format(parent_id))
